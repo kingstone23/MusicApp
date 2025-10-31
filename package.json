@@ -1,0 +1,24 @@
+{
+  "name": "musicapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kingstone23/MusicApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kingstone23/MusicApp/issues"
+  },
+  "homepage": "https://github.com/kingstone23/MusicApp#readme",
+  "dependencies": {
+    "expo": "^54.0.10"
+  }
+}
