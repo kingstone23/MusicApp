@@ -38,50 +38,50 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
         songAdapter = SongAdapter(requireContext(), songList, object : SongAdapter.OnSongClickListener {
             override fun onAddClick(song: Song) {
                 val songId = song.id
-                val context = requireContext()
-                Log.d("AddClick", "songId = $songId")
-
-                userAlbumRef.child(songId).get().addOnSuccessListener { snapshot ->
-                    if (snapshot.exists()) {
-                        Toast.makeText(context, "Bài hát đã có trong album", Toast.LENGTH_SHORT).show()
-                    } else {
-                        userAlbumRef.child(songId).setValue(true)
-                            .addOnSuccessListener {
-                                song.isInAlbum = true
-                                Toast.makeText(context, "Đã thêm vào album", Toast.LENGTH_SHORT).show()
-                                fetchSongsWithAlbumStatus()
-                                (activity as? MainActivity)?.refreshAlbumFragment()
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(context, "Lỗi khi thêm: ${it.message}", Toast.LENGTH_SHORT).show()
-                            }
-                    }
-                }
-            }
-
-            override fun onRemoveClick(song: Song) {
-                val songId = song.id
-                val context = requireContext()
-
-                userAlbumRef.child(songId).removeValue()
+                userAlbumRef.child(songId).setValue(true)
                     .addOnSuccessListener {
-                        Toast.makeText(context, "Đã xoá khỏi album", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Đã thêm vào album", Toast.LENGTH_SHORT).show()
 
-                        // ✅ Cập nhật trạng thái ngay
-                        song.isInAlbum = false
-                        songAdapter.notifyDataSetChanged()
+                        // Cập nhật trạng thái ngay trên UI
+                        val index = songList.indexOf(song)
+                        if (index != -1) {
+                            songList[index].isInAlbum = true
+                            songAdapter.notifyItemChanged(index)
+                        }
 
-                        android.os.Handler(Looper.getMainLooper()).postDelayed({
-                            fetchSongsWithAlbumStatus()
-                            (activity as? MainActivity)?.refreshAlbumFragment()
-                        }, 300)
+                        // Thông báo cho AlbumFragment để tự làm mới
+                        (activity as? MainActivity)?.refreshAlbumFragment()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(context, "Lỗi khi xoá bài hát: ${it.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Lỗi khi thêm: ${it.message}", Toast.LENGTH_SHORT).show()
                     }
             }
 
-            override fun onDelete(song: Song) {}
+            // <<< HÀM NÀY ĐÃ ĐƯỢC TỐI ƯU HÓA >>>
+            override fun onRemoveClick(song: Song) {
+                val songId = song.id
+                userAlbumRef.child(songId).removeValue()
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Đã xoá khỏi album", Toast.LENGTH_SHORT).show()
+
+                        // Chỉ cần cập nhật trạng thái ngay trên UI là đủ
+                        val index = songList.indexOf(song)
+                        if (index != -1) {
+                            songList[index].isInAlbum = false
+                            songAdapter.notifyItemChanged(index)
+                        }
+
+                        // Thông báo cho AlbumFragment để tự làm mới
+                        (activity as? MainActivity)?.refreshAlbumFragment()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), "Lỗi khi xoá bài hát: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }
+
+            override fun onUpdateClick(song: Song) { }
+            override fun onDelete(song: Song) { }
+
             override fun onSongClick(song: Song) {
                 val intent = Intent(requireContext(), PlayerActivity::class.java).apply {
                     putExtra("title", song.title)
@@ -95,11 +95,17 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
 
         recyclerView.adapter = songAdapter
 
+        // Không cần gọi fetch ở đây nữa, onResume sẽ xử lý
+        return view
+    }
+
+    // <<< THÊM PHƯƠNG THỨC NÀY VÀO - ĐÂY LÀ PHẦN SỬA LỖI QUAN TRỌNG NHẤT >>>
+    override fun onResume() {
+        super.onResume()
+        // Mỗi khi fragment này được hiển thị lại, hãy tải dữ liệu mới nhất
         auth.currentUser?.let {
             fetchSongsWithAlbumStatus()
         } ?: Log.d("AllSongsFragment", "User not logged in, cannot fetch songs")
-
-        return view
     }
 
     fun fetchSongsWithAlbumStatus() {
@@ -133,6 +139,7 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
             onLoaded(songs)
         }
     }
+
     fun updateSongList(newSongList: List<Song>) {
         songList.clear()
         songList.addAll(newSongList)

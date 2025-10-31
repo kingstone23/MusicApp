@@ -2,6 +2,7 @@ package com.example.musicapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -49,7 +50,9 @@ class AlbumActivity : AppCompatActivity() {
                 }
                 startActivity(intent)
             }
-
+            override fun onUpdateClick(song: Song) {
+                // Chức năng này không dùng trong AlbumActivity, để trống.
+            }
             override fun onAddClick(song: Song) {
                 // Không dùng trong AlbumActivity
             }
@@ -67,12 +70,18 @@ class AlbumActivity : AppCompatActivity() {
                     .addOnSuccessListener {
                         song.isInAlbum = false
                         albumSongs.remove(song)
+                        Toast.makeText(this@AlbumActivity, "After remove: ${albumSongs}", Toast.LENGTH_SHORT).show()
+
                         adapter.updateSongs(albumSongs)
+                        Toast.makeText(this@AlbumActivity, "After update: ${albumSongs}", Toast.LENGTH_SHORT).show()
+
                         Toast.makeText(this@AlbumActivity, "Đã xoá khỏi album", Toast.LENGTH_SHORT).show()
                     }
+
                     .addOnFailureListener {
                         Toast.makeText(this@AlbumActivity, "Lỗi xoá: ${it.message}", Toast.LENGTH_SHORT).show()
                     }
+                startAlbumListener()
             }
         }, SongMode.REMOVE_ONLY, isAdmin = true)
 

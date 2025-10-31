@@ -40,6 +40,10 @@
         <activity android:name=".AdminDashboardActivity" />
         <activity android:name=".AddSongActivity" />
         <activity android:name=".DeleteUserActivity" />
+        <activity android:name=".UpdateSongActivity" />
+        <activity
+            android:name=".SelectSongActivity"
+            />
 
     </application>
 

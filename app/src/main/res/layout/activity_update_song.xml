@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".UpdateSongActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp"> <!-- Tăng padding để có nhiều không gian lề hơn -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cập nhật thông tin bài hát"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="32dp"/> <!-- Tăng khoảng cách dưới tiêu đề -->
+
+        <!-- EditText cho Tên bài hát -->
+        <EditText
+            android:id="@+id/etSongTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+        android:hint="Tên bài hát"
+        android:inputType="textCapWords"
+        android:layout_marginBottom="16dp"/>
+
+        <!-- EditText cho Tên nghệ sĩ -->
+        <EditText
+            android:id="@+id/etArtistName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+        android:hint="Tên nghệ sĩ"
+        android:inputType="textCapWords"
+        android:layout_marginBottom="16dp"/>
+
+        <!-- EditText cho URL ảnh bìa -->
+        <EditText
+            android:id="@+id/etCoverUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+        android:hint="URL ảnh bìa"
+        android:inputType="textUri"
+        android:layout_marginBottom="16dp"/>
+
+        <!-- EditText cho URL file nhạc -->
+        <EditText
+            android:id="@+id/etAudioUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+        android:hint="URL file nhạc"
+        android:inputType="textUri"
+        android:layout_marginBottom="16dp"/>
+
+        <!-- Nút Lưu thay đổi -->
+        <Button
+            android:id="@+id/btnSaveChanges"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+        android:text="Lưu thay đổi"
+        android:layout_marginTop="32dp"/> <!-- Tăng khoảng cách trên nút để tách biệt khỏi khối nhập liệu -->
+
+    </LinearLayout>
+
+</ScrollView>

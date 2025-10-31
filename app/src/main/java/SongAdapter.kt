@@ -14,7 +14,8 @@ import com.bumptech.glide.Glide
 
 enum class SongMode {
     ADD_ONLY,
-    REMOVE_ONLY
+    REMOVE_ONLY,
+    SELECT_ONLY
 }
 
 class SongAdapter(
@@ -30,6 +31,8 @@ class SongAdapter(
         fun onAddClick(song: Song)       // thêm vào album
         fun onRemoveClick(song: Song)
         fun onDelete(song: Song)// gỡ khỏi album
+
+        fun onUpdateClick(song: Song)
     }
 
     inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -41,63 +44,61 @@ class SongAdapter(
 
 
         fun bind(song: Song, position: Int) {
-            // Reset để tránh reuse lỗi
+            // 1. Reset các nút về trạng thái ẩn (Giữ nguyên)
             btnDelete.visibility = View.GONE
             btnDelete.setOnClickListener(null)
             btnAction.visibility = View.GONE
             btnAction.setOnClickListener(null)
 
-            // Hiển thị thông tin bài hát
+            // 2. Hiển thị thông tin bài hát (Giữ nguyên)
             tvTitle.text = song.title
             tvArtist.text = song.artist
             Glide.with(context).load(song.cover).into(ivCover)
 
+            // 3. Sự kiện click vào item (Giữ nguyên)
             itemView.setOnClickListener {
                 listener.onSongClick(song)
             }
 
-
-            // ✅ Chức năng chung cho tất cả người dùng: thêm / xoá khỏi album
-
-            btnAction.visibility = View.VISIBLE
-
-            when (mode) {
-                SongMode.ADD_ONLY -> {
-                    btnAction.text = "Thêm"
-                    btnAction.setOnClickListener {
-
-                        if (song.isInAlbum) {
-                            Toast.makeText(context, "Bài hát đã có trong album", Toast.LENGTH_SHORT).show()
-                        } else {
-                            song.isInAlbum = true
-                            notifyItemChanged(position)
-                            listener.onAddClick(song)
-                        }
-                    }
-                }
-
-                SongMode.REMOVE_ONLY -> {
-                    btnAction.text = "Xoá"
-                    btnAction.setOnClickListener {
-                        song.isInAlbum = false
-                        notifyItemChanged(position)
-                        listener.onRemoveClick(song)
-                    }
-                }
-            }
-
-            // ✅ Chức năng mở rộng cho admin: xoá khỏi hệ thống
+            // --- BẮT ĐẦU PHẦN SỬA LỖI LOGIC ---
+            // 4. Chỉ dùng MỘT cấu trúc if/else duy nhất để quyết định hiển thị nút nào
             if (isAdmin) {
+                // Nếu là Admin, chỉ hiển thị nút Delete
                 btnDelete.visibility = View.VISIBLE
                 btnDelete.text = "Xoá"
                 btnDelete.setOnClickListener {
                     listener.onDelete(song)
                 }
             } else {
-                btnDelete.visibility = View.GONE // ⚠️ Dòng này rất quan trọng
-                btnDelete.setOnClickListener(null)
-            }
+                // Nếu là người dùng thường, dùng 'when' để quyết định hành động của btnAction
+                when (mode) {
+                    SongMode.ADD_ONLY -> {
+                        btnAction.visibility = View.VISIBLE
+                        if (song.isInAlbum) {
+                            btnAction.visibility = View.INVISIBLE // Ẩn đi nếu đã có trong album
+                        }
+                        btnAction.text = "Thêm"
+                        btnAction.setOnClickListener {
+                            if (!song.isInAlbum) listener.onAddClick(song)
+                        }
+                    }
 
+                    SongMode.REMOVE_ONLY -> {
+                        btnAction.visibility = View.VISIBLE
+                        btnAction.text = "Xoá" // "Xoá" này là gỡ khỏi album
+                        btnAction.setOnClickListener {
+                            listener.onRemoveClick(song)
+                        }
+                    }
+
+                    SongMode.SELECT_ONLY -> {
+                        // Không làm gì cả.
+                        // Vì btnAction đã được set là GONE ở đầu hàm,
+                        // nên nó sẽ không hiển thị. Đây là điều chúng ta muốn.
+                    }
+                }
+            }
+            // --- KẾT THÚC PHẦN SỬA LỖI LOGIC ---
         }
     }
 

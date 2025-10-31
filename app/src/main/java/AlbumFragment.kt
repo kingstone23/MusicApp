@@ -1,7 +1,18 @@
 package com.example.musicapp
-import android.content.Intent import android.os.Bundle
+import android.content.Intent
+import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater import android.view.View import android.view.ViewGroup import android.widget.Toast import androidx.fragment.app.Fragment import androidx.recyclerview.widget.LinearLayoutManager import androidx.recyclerview.widget.RecyclerView import com.google.firebase.auth.FirebaseAuth import com.google.firebase.database.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
+
+// AlbumFragment đã implement OnSongClickListener, nên phải có tất cả các hàm của nó
 class AlbumFragment : Fragment(), SongAdapter.OnSongClickListener {
 
 
@@ -65,6 +76,12 @@ class AlbumFragment : Fragment(), SongAdapter.OnSongClickListener {
     override fun onDelete(song: Song) {
         // Không dùng trong AlbumActivity
     }
+
+    // <<<< BẠN CHỈ CẦN THÊM HÀM NÀY VÀO >>>>
+    override fun onUpdateClick(song: Song) {
+        // Chức năng này không dùng trong AlbumFragment, để trống.
+    }
+    // <<<< KẾT THÚC PHẦN THÊM MỚI >>>>
 
 
     override fun onRemoveClick(song: Song) {

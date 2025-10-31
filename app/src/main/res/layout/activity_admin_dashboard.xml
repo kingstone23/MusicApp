@@ -32,6 +32,13 @@
             android:layout_height="wrap_content"
             android:text="Thêm bài hát mới"
             android:layout_marginTop="12dp" />
+        <Button
+            android:id="@+id/btnUpdateSong"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cập nhật bài hát"
+            android:layout_marginTop="12dp" />
+
 
         <Button
             android:id="@+id/btnDeleteUser"
@@ -40,7 +47,21 @@
             android:text="Xoá người dùng"
             android:layout_marginTop="12dp" />
     </LinearLayout>
-
+    <TextView
+        android:id="@+id/tvSelectionPrompt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Vui lòng chọn một bài hát từ danh sách để cập nhật."
+        android:textColor="@color/design_default_color_primary"
+        android:textSize="16sp"
+        android:textStyle="italic"
+        android:gravity="center"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/layoutButtons"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible" />
     <!-- RecyclerView hiển thị danh sách bài hát -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerAllSongs"
