@@ -2,9 +2,9 @@ package com.example.musicapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import android.view.*
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +16,9 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var songAdapter: SongAdapter
+
+    // danh sách gốc (full) và danh sách hiển thị (filter)
+    private val fullSongList = mutableListOf<Song>()
     private val songList = mutableListOf<Song>()
 
     private val auth by lazy { FirebaseAuth.getInstance() }
@@ -35,21 +38,21 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
         recyclerView = view.findViewById(R.id.recyclerViewSongs)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+        // Adapter - bạn giữ nguyên listener của bạn (chỉ dùng songList làm nguồn dữ liệu)
         songAdapter = SongAdapter(requireContext(), songList, object : SongAdapter.OnSongClickListener {
             override fun onAddClick(song: Song) {
                 val songId = song.id
+                if (songId.isBlank()) {
+                    Toast.makeText(requireContext(), "ID bài hát không hợp lệ", Toast.LENGTH_SHORT).show()
+                    return
+                }
+
                 userAlbumRef.child(songId).setValue(true)
                     .addOnSuccessListener {
                         Toast.makeText(requireContext(), "Đã thêm vào album", Toast.LENGTH_SHORT).show()
 
-                        // Cập nhật trạng thái ngay trên UI
-                        val index = songList.indexOf(song)
-                        if (index != -1) {
-                            songList[index].isInAlbum = true
-                            songAdapter.notifyItemChanged(index)
-                        }
-
-                        // Thông báo cho AlbumFragment để tự làm mới
+                        // Cập nhật trạng thái trên cả fullSongList và songList
+                        updateSongAlbumStatus(songId, true)
                         (activity as? MainActivity)?.refreshAlbumFragment()
                     }
                     .addOnFailureListener {
@@ -57,21 +60,18 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
                     }
             }
 
-            // <<< HÀM NÀY ĐÃ ĐƯỢC TỐI ƯU HÓA >>>
             override fun onRemoveClick(song: Song) {
                 val songId = song.id
+                if (songId.isBlank()) {
+                    Toast.makeText(requireContext(), "ID bài hát không hợp lệ", Toast.LENGTH_SHORT).show()
+                    return
+                }
+
                 userAlbumRef.child(songId).removeValue()
                     .addOnSuccessListener {
                         Toast.makeText(requireContext(), "Đã xoá khỏi album", Toast.LENGTH_SHORT).show()
 
-                        // Chỉ cần cập nhật trạng thái ngay trên UI là đủ
-                        val index = songList.indexOf(song)
-                        if (index != -1) {
-                            songList[index].isInAlbum = false
-                            songAdapter.notifyItemChanged(index)
-                        }
-
-                        // Thông báo cho AlbumFragment để tự làm mới
+                        updateSongAlbumStatus(songId, false)
                         (activity as? MainActivity)?.refreshAlbumFragment()
                     }
                     .addOnFailureListener {
@@ -79,8 +79,8 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
                     }
             }
 
-            override fun onUpdateClick(song: Song) { }
-            override fun onDelete(song: Song) { }
+            override fun onUpdateClick(song: Song) {}
+            override fun onDelete(song: Song) {}
 
             override fun onSongClick(song: Song) {
                 val intent = Intent(requireContext(), PlayerActivity::class.java).apply {
@@ -95,30 +95,61 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
 
         recyclerView.adapter = songAdapter
 
-        // Không cần gọi fetch ở đây nữa, onResume sẽ xử lý
+        // setup SearchView nếu có trong layout
+        val searchView = view.findViewById<SearchView?>(R.id.searchViewSongs)
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean = false
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterSongs(newText)
+                return true
+            }
+        })
+
+        // Không load ngay ở onCreateView, nhưng nếu muốn cũng có thể gọi fetch ở đây
         return view
     }
 
-    // <<< THÊM PHƯƠNG THỨC NÀY VÀO - ĐÂY LÀ PHẦN SỬA LỖI QUAN TRỌNG NHẤT >>>
     override fun onResume() {
         super.onResume()
-        // Mỗi khi fragment này được hiển thị lại, hãy tải dữ liệu mới nhất
         auth.currentUser?.let {
             fetchSongsWithAlbumStatus()
         } ?: Log.d("AllSongsFragment", "User not logged in, cannot fetch songs")
     }
 
+    private fun updateSongAlbumStatus(songId: String, inAlbum: Boolean) {
+        // cập nhật cả trong fullSongList và songList
+        var changedIndex = -1
+        for ((i, s) in fullSongList.withIndex()) {
+            if (s.id == songId) {
+                s.isInAlbum = inAlbum
+                // nếu item đang hiển thị (songList chứa đối tượng này) thì cập nhật adapter
+                val indexInDisplay = songList.indexOfFirst { it.id == songId }
+                if (indexInDisplay != -1) {
+                    songAdapter.notifyItemChanged(indexInDisplay)
+                }
+                changedIndex = i
+                break
+            }
+        }
+        // cũng cập nhật display list element nếu cần (objects tham chiếu cùng nhau thường cập nhật tự động)
+    }
+
     fun fetchSongsWithAlbumStatus() {
+        // show loading nếu bạn có
         userAlbumRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(albumSnap: DataSnapshot) {
                 val albumIds = albumSnap.children.mapNotNull { it.key }.toSet()
 
                 loadSongs { songs ->
+                    fullSongList.clear()
                     songList.clear()
+
                     songs.forEach { song ->
                         song.isInAlbum = albumIds.contains(song.id)
+                        fullSongList.add(song)
                         songList.add(song)
                     }
+
                     songAdapter.notifyDataSetChanged()
                 }
             }
@@ -129,7 +160,6 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
         })
     }
 
-
     private fun loadSongs(onLoaded: (List<Song>) -> Unit) {
         songsRef.get().addOnSuccessListener { snapshot ->
             val songs = snapshot.children.mapNotNull { songSnap ->
@@ -137,10 +167,30 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
                 song?.apply { id = songSnap.key ?: "" }
             }
             onLoaded(songs)
+        }.addOnFailureListener { ex ->
+            Toast.makeText(requireContext(), "Lỗi khi tải bài hát: ${ex.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
+    private fun filterSongs(keyword: String?) {
+        songList.clear()
+        if (keyword.isNullOrBlank()) {
+            songList.addAll(fullSongList)
+        } else {
+            val lower = keyword.lowercase()
+            songList.addAll(
+                fullSongList.filter {
+                    it.title.lowercase().contains(lower) || it.artist.lowercase().contains(lower)
+                }
+            )
+        }
+        songAdapter.notifyDataSetChanged()
+    }
+
+    // nếu bạn cần update list từ nơi khác
     fun updateSongList(newSongList: List<Song>) {
+        fullSongList.clear()
+        fullSongList.addAll(newSongList)
         songList.clear()
         songList.addAll(newSongList)
         songAdapter.notifyDataSetChanged()
