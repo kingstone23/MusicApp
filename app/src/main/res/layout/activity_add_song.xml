@@ -34,6 +34,14 @@
                 android:layout_marginTop="12dp" />
 
             <EditText
+                android:id="@+id/edtGenre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="VD: Pop, Ballad, Rap..."
+                android:inputType="textCapWords" />
+
+            <EditText
                 android:id="@+id/edtCover"
                 android:hint="Link ảnh cover"
                 android:layout_width="match_parent"

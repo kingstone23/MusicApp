@@ -60,6 +60,7 @@ class AdminDashboardActivity : AppCompatActivity() {
                     putExtra("cover", selectedSong.cover)
                     putExtra("audioUrl", selectedSong.audioUrl)
                     putExtra("IS_FROM_ADMIN_DASHBOARD", true)
+                    putExtra("genre", selectedSong.genre)
                 }
                 // Dùng launcher 1 để mở màn hình update
                 updateAndRefreshLauncher.launch(intent)

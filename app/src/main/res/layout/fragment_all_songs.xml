@@ -5,15 +5,33 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- Search -->
-    <SearchView
-        android:id="@+id/searchViewSongs"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:queryHint="Tìm bài hát hoặc ca sĩ..."
-        android:iconifiedByDefault="false" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp">
 
-    <!-- Loading -->
+        <SearchView
+            android:id="@+id/searchViewSongs"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:queryHint="Tìm bài hát hoặc ca sĩ..."
+            android:iconifiedByDefault="false"
+            android:background="@android:color/transparent" />
+
+        <ImageButton
+            android:id="@+id/btnFilter"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            android:contentDescription="Lọc thể loại"
+            android:scaleType="centerInside" />
+
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/loadingLayout"
         android:layout_width="match_parent"
@@ -34,7 +52,6 @@
             android:text="Đang tải bài hát..." />
     </LinearLayout>
 
-    <!-- List bài hát -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewSongs"
         android:layout_width="match_parent"
