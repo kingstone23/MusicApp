@@ -65,6 +65,7 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
             override fun onSongClick(song: Song) {
                 // Chuyển sang màn hình phát nhạc
                 val intent = Intent(requireContext(), PlayerActivity::class.java).apply {
+                    putExtra("songId", song.id)
                     putExtra("title", song.title)
                     putExtra("artist", song.artist)
                     putExtra("cover", song.cover)
@@ -240,6 +241,7 @@ class AllSongsFragment(private val mode: SongMode = SongMode.ADD_ONLY) : Fragmen
             Toast.makeText(requireContext(), "Lỗi tải nhạc: ${ex.message}", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     // --- PUBLIC FUNCTION: Để MainActivity gọi khi cần update list từ bên ngoài ---
     fun updateSongList(newSongList: List<Song>) {

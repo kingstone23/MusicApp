@@ -10,6 +10,12 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.Transaction
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -26,6 +32,12 @@ class PlayerActivity : AppCompatActivity() {
         val title = intent.getStringExtra("title")
         val artist = intent.getStringExtra("artist")
         val cover = intent.getStringExtra("cover")
+        val songId = intent.getStringExtra("songId")
+
+        if (!songId.isNullOrEmpty()) {
+            increaseViewCount(songId)
+        }
+
 
         // Kiểm tra dữ liệu
         if (audioUrl.isNullOrEmpty() || title.isNullOrEmpty() || artist.isNullOrEmpty()) {
@@ -58,6 +70,32 @@ class PlayerActivity : AppCompatActivity() {
             })
         }
     }
+
+    private fun increaseViewCount(songId: String) {
+        val songRef = FirebaseDatabase.getInstance()
+            .getReference("Songs")
+            .child(songId)
+            .child("views")
+
+        songRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val currentViews = currentData.getValue(Long::class.java) ?: 0
+                currentData.value = currentViews + 1
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(
+                error: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ) {
+                if (error != null) {
+                    Log.e("PlayerActivity", "Tăng view lỗi: ${error.message}")
+                }
+            }
+        })
+    }
+
 
     override fun onStart() {
         super.onStart()

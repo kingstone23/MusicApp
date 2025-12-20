@@ -41,6 +41,8 @@ class SongAdapter(
         private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         private val tvArtist: TextView = itemView.findViewById(R.id.tvArtist)
         private val ivCover: ImageView = itemView.findViewById(R.id.ivCover)
+        private val tvViews: TextView = itemView.findViewById(R.id.tvViews)
+
 
 
         fun bind(song: Song, position: Int) {
@@ -53,6 +55,8 @@ class SongAdapter(
             // 2. Hiển thị thông tin bài hát (Giữ nguyên)
             tvTitle.text = song.title
             tvArtist.text = song.artist
+            tvViews.text = "${song.views} lượt nghe"
+
             Glide.with(context).load(song.cover).into(ivCover)
 
             // 3. Sự kiện click vào item (Giữ nguyên)
