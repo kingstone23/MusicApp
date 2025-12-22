@@ -15,8 +15,8 @@ data class Song(
     var artist: String = "",
     var audioUrl: String = "",
     var cover: String = "",
-    val genre: String? = null,
-    var views: Long = 0,
+    var genre: String? = null,
+    var views: Int = 0,
 
     // 2. Thay @Transient bằng @Exclude
     @get:Exclude

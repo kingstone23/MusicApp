@@ -27,6 +27,7 @@ class PlayerActivity : AppCompatActivity() {
         binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        player = ExoPlayer.Builder(this).build()
         // Nhận dữ liệu từ Intent
         val audioUrl = intent.getStringExtra("audioUrl")
         val title = intent.getStringExtra("title")

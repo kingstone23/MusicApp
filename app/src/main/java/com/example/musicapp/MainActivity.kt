@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        
         // Kiểm tra Login
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
@@ -48,6 +48,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContentView(R.layout.activity_main)
+
+        //THÊM ĐOẠN NÀY Ở ĐÂY
+        val btnRanking = findViewById<Button>(R.id.btnRanking)
+        btnRanking.setOnClickListener {
+            startActivity(Intent(this, RankingActivity::class.java))
+        }
 
         // Ánh xạ View
         tabLayout = findViewById(R.id.tabLayout)

@@ -9,13 +9,13 @@ plugins {
 
 android {
     namespace = "com.example.musicapp"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
         applicationId = "com.example.musicapp"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
@@ -48,16 +48,17 @@ dependencies {
 
     // Glide
     implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation(libs.androidx.activity)
     kapt("com.github.bumptech.glide:compiler:4.15.1")
 
     // Google Play Services
     implementation("com.google.android.gms:play-services-base:18.2.0")
 
     // ExoPlayer
-    implementation("com.google.android.exoplayer:exoplayer-core:2.19.1")
-    implementation("com.google.android.exoplayer:exoplayer-ui:2.19.1")
-    implementation("androidx.media3:media3-exoplayer:1.8.0")
-    implementation("androidx.media3:media3-ui:1.8.0")
+    implementation("androidx.media3:media3-exoplayer:1.2.1")
+    implementation("androidx.media3:media3-ui:1.2.1")
+    implementation("androidx.media3:media3-common:1.2.1")
+    implementation("androidx.media3:media3-session:1.2.1")
 
     // AndroidX
     implementation("androidx.core:core-ktx:1.13.1")
