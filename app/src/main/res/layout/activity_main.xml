@@ -7,21 +7,18 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- TabLayout -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
 
-    <!-- ViewPager2 -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Các nút chức năng admin -->
     <LinearLayout
         android:id="@+id/adminButtonContainer"
         android:orientation="vertical"
@@ -29,34 +26,22 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp">
 
-
         <Button
             android:id="@+id/btnAdminDashboard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Vào Admin Dashboard"
             android:layout_marginTop="12dp" />
+
         <Button
             android:id="@+id/btnAdminPanel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Admin Dashboard"
             android:visibility="gone" />
-        <Button
-            android:id="@+id/btnRanking"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Bảng xếp hạng"
-            android:layout_margin="8dp"/>
-
-
-
-
-
 
     </LinearLayout>
 
-    <!-- Nút đăng xuất -->
     <Button
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"

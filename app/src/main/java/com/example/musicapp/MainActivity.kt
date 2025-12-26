@@ -49,11 +49,8 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        //THÊM ĐOẠN NÀY Ở ĐÂY
-        val btnRanking = findViewById<Button>(R.id.btnRanking)
-        btnRanking.setOnClickListener {
-            startActivity(Intent(this, RankingActivity::class.java))
-        }
+
+
 
         // Ánh xạ View
         tabLayout = findViewById(R.id.tabLayout)
@@ -67,17 +64,23 @@ class MainActivity : AppCompatActivity() {
         btnAdminDashboard?.visibility = View.GONE
 
         // Khởi tạo các Fragment
+        val rankingFragment = RankingFragment()
         val allSongsFragment = AllSongsFragment()
         val albumFragment = AlbumFragment()
 
         // Setup ViewPager Adapter
         // (Đảm bảo MainPagerAdapter của bạn có hàm getAllSongsFragment() và getAlbumFragment())
-        pagerAdapter = MainPagerAdapter(this, listOf(allSongsFragment, albumFragment))
+        pagerAdapter = MainPagerAdapter(this, listOf(rankingFragment, allSongsFragment, albumFragment))
         viewPager.adapter = pagerAdapter
 
         // Setup TabLayout
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            tab.text = if (position == 0) "Tất cả bài hát" else "Album cá nhân"
+            tab.text = when (position) {
+                0 -> "Bảng xếp hạng"    // Tab đầu tiên
+                1 -> "Tất cả bài hát"   // Tab thứ hai
+                2 -> "Album cá nhân"    // Tab thứ ba
+                else -> ""
+            }
         }.attach()
 
         // Xử lý Logout

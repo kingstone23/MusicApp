@@ -1,24 +1,29 @@
 package com.example.musicapp
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
+// Adapter chuẩn cho ViewPager2
 class MainPagerAdapter(
-    activity: AppCompatActivity,
-    private val fragments: List<Fragment>   // cho phép truyền list fragment
-) : FragmentStateAdapter(activity) {
+    fragmentActivity: FragmentActivity,
+    private val fragments: List<Fragment> // <--- Danh sách phải là Fragment
+) : FragmentStateAdapter(fragmentActivity) {
 
-    override fun getItemCount(): Int = fragments.size
-
-    override fun createFragment(position: Int): Fragment = fragments[position]
-
-    // Hàm tiện ích lấy fragment theo kiểu
-    fun getAlbumFragment(): AlbumFragment? {
-        return fragments.find { it is AlbumFragment } as? AlbumFragment
+    override fun getItemCount(): Int {
+        return fragments.size
     }
 
+    override fun createFragment(position: Int): Fragment {
+        return fragments[position]
+    }
+
+    // Hàm tiện ích để lấy Fragment ra (dùng để refresh dữ liệu)
     fun getAllSongsFragment(): AllSongsFragment? {
-        return fragments.find { it is AllSongsFragment } as? AllSongsFragment
+        return fragments.filterIsInstance<AllSongsFragment>().firstOrNull()
+    }
+
+    fun getAlbumFragment(): AlbumFragment? {
+        return fragments.filterIsInstance<AlbumFragment>().firstOrNull()
     }
 }

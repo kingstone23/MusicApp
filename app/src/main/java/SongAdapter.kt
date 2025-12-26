@@ -4,10 +4,9 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageButton // Đổi từ Button sang ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -22,87 +21,104 @@ class SongAdapter(
     private val context: Context,
     private val songs: MutableList<Song>,
     private val listener: OnSongClickListener,
-    private val mode: SongMode, // vẫn giữ để dùng nếu cần
+    private val mode: SongMode,
     private val isAdmin: Boolean
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
 
     interface OnSongClickListener {
         fun onSongClick(song: Song)
-        fun onAddClick(song: Song)       // thêm vào album
-        fun onRemoveClick(song: Song)
-        fun onDelete(song: Song)// gỡ khỏi album
-
+        fun onAddClick(song: Song)       // Thêm vào album
+        fun onRemoveClick(song: Song)    // Gỡ khỏi album
+        fun onDelete(song: Song)         // Admin xoá vĩnh viễn
         fun onUpdateClick(song: Song)
     }
 
     inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val btnAction: Button = itemView.findViewById(R.id.btnAction)
-        private val btnDelete: Button = itemView.findViewById(R.id.btndelete)
+        // 1. Đổi kiểu dữ liệu thành ImageButton
+        private val btnAction: ImageButton = itemView.findViewById(R.id.btnAction)
+        private val btnDelete: ImageButton = itemView.findViewById(R.id.btndelete)
+
         private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         private val tvArtist: TextView = itemView.findViewById(R.id.tvArtist)
         private val ivCover: ImageView = itemView.findViewById(R.id.ivCover)
         private val tvViews: TextView = itemView.findViewById(R.id.tvViews)
 
-
-
         fun bind(song: Song, position: Int) {
-            // 1. Reset các nút về trạng thái ẩn (Giữ nguyên)
+            // Reset trạng thái view
             btnDelete.visibility = View.GONE
-            btnDelete.setOnClickListener(null)
             btnAction.visibility = View.GONE
+            // Xóa sự kiện cũ để tránh lỗi logic khi tái sử dụng view
+            btnDelete.setOnClickListener(null)
             btnAction.setOnClickListener(null)
 
-            // 2. Hiển thị thông tin bài hát (Giữ nguyên)
+            // Hiển thị thông tin bài hát
             tvTitle.text = song.title
             tvArtist.text = song.artist
             tvViews.text = "${song.views} lượt nghe"
 
-            Glide.with(context).load(song.cover).into(ivCover)
+            Glide.with(context)
+                .load(song.cover)
+                .placeholder(R.mipmap.ic_launcher) // Hiện ảnh nhẹ trong lúc chờ
+                .error(R.mipmap.ic_launcher)
+                .override(150, 150) // [CỰC KỲ QUAN TRỌNG]: Chỉ load ảnh nhỏ 150x150px
+                .encodeFormat(android.graphics.Bitmap.CompressFormat.WEBP)
+                .into(ivCover)
 
-            // 3. Sự kiện click vào item (Giữ nguyên)
+            // Click vào cả dòng -> Phát nhạc
             itemView.setOnClickListener {
                 listener.onSongClick(song)
             }
 
-            // --- BẮT ĐẦU PHẦN SỬA LỖI LOGIC ---
-            // 4. Chỉ dùng MỘT cấu trúc if/else duy nhất để quyết định hiển thị nút nào
+            // --- XỬ LÝ LOGIC ICON (+ / -) ---
             if (isAdmin) {
-                // Nếu là Admin, chỉ hiển thị nút Delete
+                // ADMIN: Hiện nút thùng rác đỏ để xoá vĩnh viễn
                 btnDelete.visibility = View.VISIBLE
-                btnDelete.text = "Xoá"
+                btnDelete.setImageResource(android.R.drawable.ic_menu_delete)
+                btnDelete.setColorFilter(context.resources.getColor(android.R.color.holo_red_dark))
+
                 btnDelete.setOnClickListener {
                     listener.onDelete(song)
                 }
             } else {
-                // Nếu là người dùng thường, dùng 'when' để quyết định hành động của btnAction
+                // USER THƯỜNG
                 when (mode) {
                     SongMode.ADD_ONLY -> {
-                        btnAction.visibility = View.VISIBLE
+                        // --- MÀN HÌNH TẤT CẢ BÀI HÁT ---
                         if (song.isInAlbum) {
-                            btnAction.visibility = View.INVISIBLE // Ẩn đi nếu đã có trong album
-                        }
-                        btnAction.text = "Thêm"
-                        btnAction.setOnClickListener {
-                            if (!song.isInAlbum) listener.onAddClick(song)
+                            // Nếu đã có trong Album -> ẨN NÚT LUÔN (Theo yêu cầu của bạn)
+                            btnAction.visibility = View.INVISIBLE
+                            // Dùng INVISIBLE để giữ khoảng cách, hoặc GONE để mất hẳn
+
+                            btnAction.setOnClickListener(null) // Xoá sự kiện click
+                        } else {
+                            // Chưa có trong Album -> Hiện icon CỘNG (+)
+                            btnAction.visibility = View.VISIBLE
+                            btnAction.setImageResource(android.R.drawable.ic_input_add)
+                            btnAction.setColorFilter(context.resources.getColor(R.color.purple_500))
+
+                            btnAction.setOnClickListener {
+                                listener.onAddClick(song)
+                            }
                         }
                     }
 
                     SongMode.REMOVE_ONLY -> {
+                        // --- MÀN HÌNH ALBUM CÁ NHÂN ---
+                        // Luôn hiện nút Xoá (-)
                         btnAction.visibility = View.VISIBLE
-                        btnAction.text = "Xoá" // "Xoá" này là gỡ khỏi album
+                        btnAction.setImageResource(android.R.drawable.ic_menu_delete)
+                        btnAction.setColorFilter(context.resources.getColor(android.R.color.holo_red_dark))
+
                         btnAction.setOnClickListener {
                             listener.onRemoveClick(song)
                         }
                     }
 
                     SongMode.SELECT_ONLY -> {
-                        // Không làm gì cả.
-                        // Vì btnAction đã được set là GONE ở đầu hàm,
-                        // nên nó sẽ không hiển thị. Đây là điều chúng ta muốn.
+                        btnAction.visibility = View.GONE
                     }
                 }
             }
-            // --- KẾT THÚC PHẦN SỬA LỖI LOGIC ---
         }
     }
 
