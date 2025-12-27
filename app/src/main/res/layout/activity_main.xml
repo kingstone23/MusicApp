@@ -3,35 +3,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:fitsSystemWindows="true"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="@color/light_background"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-
+        android:layout_height="wrap_content"
+        android:background="@color/primary_purple"
+        app:tabSelectedTextColor="@color/white"
+        app:tabTextColor="#B3FFFFFF"
+        app:tabIndicatorColor="@color/rank_gold"
+        app:tabIndicatorHeight="3dp"
+        app:tabMode="fixed"
+        android:elevation="4dp"/>
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"/>
 
     <LinearLayout
         android:id="@+id/adminButtonContainer"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp">
-
+        android:padding="16dp"
+        android:background="@color/white"
+        android:elevation="8dp">
         <Button
             android:id="@+id/btnAdminDashboard"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:text="Vào Admin Dashboard"
-            android:layout_marginTop="12dp" />
+            android:backgroundTint="@color/primary_purple"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"/>
 
         <Button
             android:id="@+id/btnAdminPanel"
@@ -39,16 +49,6 @@
             android:layout_height="wrap_content"
             android:text="Admin Dashboard"
             android:visibility="gone" />
-
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Đăng xuất"
-        android:layout_gravity="end"
-        android:padding="8dp"
-        android:layout_marginTop="12dp" />
 
 </LinearLayout>

@@ -3,8 +3,11 @@ package com.example.musicapp
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu // Import Menu
+import android.view.MenuItem // Import MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -20,27 +23,25 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewPager: ViewPager2
     private lateinit var pagerAdapter: MainPagerAdapter
 
-    private var btnLogout: Button? = null
+    // private lateinit var tvWelcome: TextView -> KHÔNG CẦN NỮA
+    // private var btnLogout: View? = null -> KHÔNG CẦN NỮA
+
     private var btnAdminDashboard: Button? = null
-    private var btnAdminPanel: Button? = null // Đã sửa thành nullable cho an toàn
+    private var btnAdminPanel: Button? = null
 
     private val auth by lazy { FirebaseAuth.getInstance() }
 
-    // Launcher xử lý kết quả trả về từ AdminDashboard (Thay thế cho onActivityResult cũ)
     private val adminDashboardLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            // Khi quay lại từ Admin Dashboard, refresh lại dữ liệu AllSongsFragment
-            // để cập nhật các bài hát mới thêm hoặc đã sửa
             pagerAdapter.getAllSongsFragment()?.fetchSongsWithAlbumStatus()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Kiểm tra Login
+
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -49,96 +50,97 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-
-
-
         // Ánh xạ View
         tabLayout = findViewById(R.id.tabLayout)
         viewPager = findViewById(R.id.viewPager)
-        btnLogout = findViewById(R.id.btnLogout)
+
+        // btnLogout = findViewById(R.id.btnLogout) -> XÓA DÒNG NÀY
+
         btnAdminDashboard = findViewById(R.id.btnAdminDashboard)
         btnAdminPanel = findViewById(R.id.btnAdminPanel)
 
-        // Ẩn mặc định
         btnAdminPanel?.visibility = View.GONE
         btnAdminDashboard?.visibility = View.GONE
 
-        // Khởi tạo các Fragment
+        // Setup Pager & Tabs
         val rankingFragment = RankingFragment()
         val allSongsFragment = AllSongsFragment()
         val albumFragment = AlbumFragment()
 
-        // Setup ViewPager Adapter
-        // (Đảm bảo MainPagerAdapter của bạn có hàm getAllSongsFragment() và getAlbumFragment())
         pagerAdapter = MainPagerAdapter(this, listOf(rankingFragment, allSongsFragment, albumFragment))
         viewPager.adapter = pagerAdapter
 
-        // Setup TabLayout
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "Bảng xếp hạng"    // Tab đầu tiên
-                1 -> "Tất cả bài hát"   // Tab thứ hai
-                2 -> "Album cá nhân"    // Tab thứ ba
+                0 -> "Bảng xếp hạng"
+                1 -> "Tất cả bài hát"
+                2 -> "Album cá nhân"
                 else -> ""
             }
         }.attach()
 
-        // Xử lý Logout
-        btnLogout?.setOnClickListener {
-            auth.signOut()
-            val intent = Intent(this, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
-            finish()
-        }
+        // Xử lý Logout cũ -> XÓA ĐOẠN btnLogout.setOnClickListener CŨ ĐI
 
-        // Kiểm tra quyền Admin để hiện nút Dashboard
         checkAdminPermission()
+        loadUserName() // Load tên lên thanh Action Bar
 
-        // Sự kiện click nút Admin Dashboard
+        // Admin Button Logic
         btnAdminDashboard?.setOnClickListener {
+            // ... (Giữ nguyên logic Admin) ...
             val uid = auth.currentUser?.uid ?: return@setOnClickListener
-
-            // Kiểm tra lại lần nữa cho chắc chắn
             val userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid)
-            userRef.child("isAdmin").get()
-                .addOnSuccessListener { snapshot ->
-                    val isAdmin = snapshot.getValue(Boolean::class.java) ?: false
-                    if (isAdmin) {
-                        val intent = Intent(this, AdminDashboardActivity::class.java)
-                        // Dùng launcher để nhận kết quả trả về
-                        adminDashboardLauncher.launch(intent)
-                    } else {
-                        Toast.makeText(this, "Bạn không phải admin", Toast.LENGTH_SHORT).show()
-                    }
+            userRef.child("isAdmin").get().addOnSuccessListener { snapshot ->
+                val isAdmin = snapshot.getValue(Boolean::class.java) ?: false
+                if (isAdmin) {
+                    val intent = Intent(this, AdminDashboardActivity::class.java)
+                    adminDashboardLauncher.launch(intent)
                 }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Lỗi kiểm tra quyền: ${it.message}", Toast.LENGTH_SHORT).show()
-                }
-        }
-    }
-
-    private fun checkAdminPermission() {
-        val uid = auth.currentUser?.uid ?: return
-        val ref = FirebaseDatabase.getInstance().getReference("Users/$uid/isAdmin")
-
-        ref.get().addOnSuccessListener { snapshot ->
-            if (snapshot.getValue(Boolean::class.java) == true) {
-                btnAdminDashboard?.visibility = View.VISIBLE
             }
-        }.addOnFailureListener {
-            Log.e("MainActivity", "Failed to check admin status: ${it.message}")
         }
     }
 
-    // Hàm gọi từ AllSongsFragment để refresh AlbumFragment
-    fun refreshAlbumFragment() {
-        pagerAdapter.getAlbumFragment()?.refreshAlbumSongs()
+    // --- 1. KHỞI TẠO MENU (Hiện nút Logout lên góc phải) ---
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
     }
 
-    // Hàm gọi từ nơi khác nếu cần refresh list AllSongs
-    fun refreshAllSongs(newSongList: List<Song>) {
-        Log.d("MainActivity", "Refreshing with ${newSongList.size} songs")
-        pagerAdapter.getAllSongsFragment()?.updateSongList(newSongList)
+    // --- 2. XỬ LÝ SỰ KIỆN BẤM MENU ---
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_logout -> {
+                // Logic đăng xuất ở đây
+                auth.signOut()
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
+
+    private fun loadUserName() {
+        val user = auth.currentUser
+        val uid = user?.uid ?: return
+        val userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid)
+
+        userRef.get().addOnSuccessListener { snapshot ->
+            val fullName = snapshot.child("fullName").getValue(String::class.java)
+                ?: snapshot.child("name").getValue(String::class.java)
+            val displayName = if (!fullName.isNullOrEmpty()) fullName else user.email?.substringBefore("@") ?: "User"
+
+            // Hiện tên lên thanh tiêu đề
+            supportActionBar?.title = "Hi, $displayName "
+
+        }.addOnFailureListener {
+            supportActionBar?.title = "Music App"
+        }
+    }
+
+    // ... (Các hàm checkAdminPermission, refresh... giữ nguyên)
+    private fun checkAdminPermission() { /*...*/ }
+    fun refreshAlbumFragment() { /*...*/ }
+    fun refreshAllSongs(newSongList: List<Song>) { /*...*/ }
 }

@@ -10,4 +10,9 @@
     <color name="red_error">#B00020</color>
     <color name="dark_bg_start">#1F1B24</color> <color name="dark_bg_end">#121212</color>   <color name="text_primary">#FFFFFF</color>       <color name="text_secondary">#B3B3B3</color>     <color name="neon_purple">#BB86FC</color>
     <color name="neon_purple_dim">#3700B3</color>
+    <color name="light_background">#F5F5F5</color>  <color name="accent_blue">#2196F3</color>       <color name="light_card_bg">#FFFFFF</color>     <color name="light_text_primary">#212121</color> <color name="light_text_secondary">#757575</color> <color name="btn_logout_bg">#E0E0E0</color>     <color name="color_danger">#D32F2F</color>      <color name="rank_gold">#FFD700</color>
+    <color name="rank_silver">#808080</color>
+    <color name="rank_bronze">#CD7F32</color>
+    <color name="primary_purple">#6200EE</color>
+    <color name="primary_purple_dark">#3700B3</color>
 </resources>
