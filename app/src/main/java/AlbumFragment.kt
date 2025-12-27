@@ -107,11 +107,18 @@ class AlbumFragment : Fragment(), SongAdapter.OnSongClickListener {
             putExtra("artist", song.artist)
             putExtra("cover", song.cover)
             putExtra("audioUrl", song.audioUrl)
+            putExtra("songId", song.id)
         }
         startActivity(intent)
     }
 
     fun refreshAlbumSongs() {
+        loadAlbumSongs()
+    }
+    override fun onResume() {
+        super.onResume()
+        // Tải lại dữ liệu mỗi khi quay lại màn hình này
+        // Để cập nhật số View mới nhất
         loadAlbumSongs()
     }
 }

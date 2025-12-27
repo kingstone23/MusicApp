@@ -47,6 +47,7 @@ class AlbumActivity : AppCompatActivity() {
                     putExtra("artist", song.artist)
                     putExtra("cover", song.cover)
                     putExtra("audioUrl", song.audioUrl)
+                    putExtra("songId", song.id)
                 }
                 startActivity(intent)
             }
